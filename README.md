@@ -1,5 +1,5 @@
 
-# Desafio de Projeto Design Patterns com Java e Spring Framework
+# Projeto Design Patterns com Java e Spring Framework
 
 Esta é uma API RESTful para gerenciamento de clientes, construída com Spring Boot. A aplicação utiliza vários padrões de projeto, incluindo Singleton, Strategy e Facade, para manter uma arquitetura limpa e eficiente.
 
