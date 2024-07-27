@@ -25,10 +25,43 @@ Esta é uma API RESTful para gerenciamento de clientes, construída com Spring B
 
    - Melhorado o manuseio das respostas HTTP, incluindo o retorno de status apropriados como `201 Created` para inserções bem-sucedidas e `404 Not Found` quando um cliente não é encontrado.
 
-3. **Tratamento de Exceções no `ViaCepService`**
+3. **Tratamento de Exceções
 
-   - Adicionado tratamento de exceções para lidar com erros ao consultar o serviço ViaCEP.
+A aplicação possui uma camada de tratamento de exceções globais para garantir que mensagens de erro significativas sejam retornadas nas respostas da API.
 
+### Exceções Customizadas
+
+#### ResourceNotFoundException
+
+Lançada quando um recurso não é encontrado, por exemplo, quando um CEP é inválido ou não encontrado.
+
+### GlobalExceptionHandler
+
+Captura exceções globais e retorna respostas apropriadas com mensagens de erro.
+
+```java
+package me.dio.gof.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+
+@ControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
+
+```
 
 ## Dependências
 
