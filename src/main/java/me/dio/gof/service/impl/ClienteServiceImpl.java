@@ -1,5 +1,6 @@
 package me.dio.gof.service.impl;
 
+import me.dio.gof.exception.ResourceNotFoundException;
 import me.dio.gof.model.Cliente;
 import me.dio.gof.model.ClienteRepository;
 import me.dio.gof.model.Endereco;
@@ -72,25 +73,32 @@ public class ClienteServiceImpl implements ClienteService {
 
         // Verificar se o Endereco do Cliente já existe (pelo CEP).
         String cep = cliente.getEndereco().getCep();
-
         Endereco endereco = enderecoRepository.findById(cep).orElseGet(() -> {
-
             // Caso não exista, integrar com o ViaCEP e persistir o retorno.
             ResponseEntity<Endereco> response = viaCepService.consultarCep(cep);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 Endereco novoEndereco = response.getBody();
                 enderecoRepository.save(novoEndereco);
                 return novoEndereco;
+            } else {
+                // Tratar erros ao consultar o ViaCEP.
+                throw new ResourceNotFoundException("Erro ao consultar o serviço ViaCEP. Código de status: " + response.getStatusCodeValue());
             }
-            return null;
         });
+
         if (endereco != null) {
             cliente.setEndereco(endereco);
-            // Inserir Cliente, vinculando o Endereco (novo ou existente).
-            clienteRepository.save(cliente);
-        } else {
+            try {
+                // Inserir Cliente, vinculando o Endereco (novo ou existente).
+                clienteRepository.save(cliente);
+            } catch (Exception e) {
+                // Tratar erros ao salvar o cliente.
+                throw new RuntimeException("Erro ao salvar o cliente: " + e.getMessage(), e);
+            }
+        }
+        {
             // Lançar exceção se o endereço não foi encontrado
-            throw new RuntimeException("CEP inválido ou não encontrado: " + cep);
+            throw new ResourceNotFoundException("CEP inválido ou não encontrado: " + cep);
         }
     }
 }
